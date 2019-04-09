@@ -1,4 +1,4 @@
----
+<!-- # --- -->
 title: "Temperatura JP x CG"
 output:
     html_document:
@@ -12,35 +12,57 @@ library(here)
 library(lubridate)
 library(ggbeeswarm)
 theme_set(theme_bw())
+library(ggplot2)
 ```
 
 ```{r read}
 climas = read_csv(here::here("data/clima_cg_jp-semanal.csv"), 
                   col_types = "cTdddddd")
 
+cg = climas %>% filter(cidade == 'Campina Grande')
+
+jp = climas %>% filter(cidade == 'João Pessoa')
+
 glimpse(climas)
 ```
 
 ## Temperatura
 
-### Onde é mais quente?
-
-
-### As temperaturas máximas semanais (o pico do calor) são tão diferentes quanto as médias? Mais?  
-
-
 ### Quais os meses mais quentes e mais frios? 
 
+Para fazer essa análise eu considerei a média da soma das temperaturas médias coletadas ao longo do mês. Além disso fiz essa análise considerando cada cidade indivudualmente e também juntando os dados das duas cidades.
+```{r}
+cg_jp_hot = climas %>% select(cidade, semana, tmedia) %>% mutate(month = format(semana, "%m"), year = format(semana, "%Y")) %>% group_by(month) %>% summarise(tmed = mean(tmedia))
 
-### Qual foi o São João  mais frio de CG que está nos nossos dados?
+ggplot(data=cg_jp_hot, mapping=aes(x=month, y=tmed)) + geom_col() + ggtitle("Temperatura média por mês considerando as duas cidades") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês")
+
+cg_hot = cg %>% select(cidade, semana, tmedia) %>% mutate(month = format(semana, "%m"), year = format(semana, "%Y")) %>% group_by(month) %>% summarise(tmed = mean(tmedia))
+
+ggplot(data=cg_hot, mapping=aes(x=month, y=tmed)) + geom_col() + ggtitle("Temperatura média por mês em Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês")
 
 
+jp_hot = jp %>% select(cidade, semana, tmedia) %>% mutate(month = format(semana, "%m"), year = format(semana, "%Y")) %>% group_by(month) %>% summarise(tmed = mean(tmedia))
+
+ggplot(data=jp_hot, mapping=aes(x=month, y=tmed)) + geom_bar(stat = "identity") + ggtitle("Temperatura média por mês em João Pessoa") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês")
+```
+
+### Qual foi o São João mais frio de CG que está nos nossos dados?
+
+Para essa análise eu considerei que o São João corresponde a todo o mês de Junho tendo em vista que o dia de São João é 24/06 e temos festa na cidade praticamente todos os dias desse mês.
+```{r}
+top_10_menores_temperaturas = climas %>% select(cidade, semana, tmin) %>% filter(cidade == 'Campina Grande', month(semana) == 6) %>% arrange(desc(tmin)) %>% tail(campina_grande, n=10)
+
+ggplot(data=top_10_menores_temperaturas, mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = tmin, )) + geom_point() + xlab("Data") + ylab("Temperatura Mínima") + ggtitle("São João mais frio de Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) +  geom_point(data=top_10_menores_temperaturas[10:10, ], colour="red", size=5)
+```
+
+
+Portanto, nesse caso, o São João mais frio foi no dia 29/06/2003 com a temperatura mínima registrada de aproximadamente 16ºC
 
 ## Chuva
 
 ### Quanto chove por semana em JP e CG?
 
-Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual? 
+### Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual? 
 
 ### No geral, onde chove mais?
 

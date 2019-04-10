@@ -32,18 +32,16 @@ glimpse(climas)
 
 Para fazer essa análise eu considerei a média da soma das temperaturas médias coletadas ao longo do mês. Além disso fiz essa análise considerando cada cidade indivudualmente e também juntando os dados das duas cidades.
 ```{r}
-cg_jp_hot = climas %>% select(cidade, semana, tmedia) %>% mutate(month = format(semana, "%m"), year = format(semana, "%Y")) %>% group_by(month) %>% summarise(tmed = mean(tmedia))
-
-ggplot(data=cg_jp_hot, mapping=aes(x=month, y=tmed)) + geom_col() + ggtitle("Temperatura média por mês considerando as duas cidades") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês")
-
 cg_hot = cg %>% select(cidade, semana, tmedia) %>% mutate(month = format(semana, "%m"), year = format(semana, "%Y")) %>% group_by(month) %>% summarise(tmed = mean(tmedia))
 
-ggplot(data=cg_hot, mapping=aes(x=month, y=tmed)) + geom_col() + ggtitle("Temperatura média por mês em Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês")
-
+ggplot(data=cg_hot, mapping=aes(x=month, y=tmed)) + ggtitle("Temperatura média por mês em Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês") + geom_col(data=cg_hot[7,], colour="blue", fill=rgb(0,0,1)) + geom_col(data=cg_hot[-c(1,2,3,7,12),]) + geom_col(data=cg_hot[-c(4,5,6,7,8,9,10,11),], fill=rgb(0.9,0,0))
 
 jp_hot = jp %>% select(cidade, semana, tmedia) %>% mutate(month = format(semana, "%m"), year = format(semana, "%Y")) %>% group_by(month) %>% summarise(tmed = mean(tmedia))
 
-ggplot(data=jp_hot, mapping=aes(x=month, y=tmed)) + geom_bar(stat = "identity") + ggtitle("Temperatura média por mês em João Pessoa") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês")
+ggplot(data=jp_hot, mapping=aes(x=month, y=tmed)) + geom_col(data=cg_hot[7,], colour="blue", fill=rgb(0,0,1)) + ggtitle("Temperatura média por mês em João Pessoa") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês") + geom_col(data=jp_hot[-c(7),]) + geom_col(data=jp_hot[3,], colour="red", fill=rgb(0.9,0,0))
+
+ggplot(mapping=aes(x=month, y=tmed)) + geom_col(data=jp_hot, fill=rgb(0.8,0.1,0)) + geom_col(data=cg_hot, fill=rgb(0.1,0,0.4)) + ggtitle("Temperatura média por mês considerando as duas cidades") + theme(plot.title = element_text(hjust = 0.5)) + ylab('Temperatura') + xlab("Mês")
+
 ```
 
 ### Qual foi o São João mais frio de CG que está nos nossos dados?
@@ -52,7 +50,7 @@ Para essa análise eu considerei que o São João corresponde a todo o mês de J
 ```{r}
 top_10_menores_temperaturas = climas %>% select(cidade, semana, tmin) %>% filter(cidade == 'Campina Grande', month(semana) == 6) %>% arrange(desc(tmin)) %>% tail(campina_grande, n=10)
 
-ggplot(data=top_10_menores_temperaturas, mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = tmin, )) + geom_point() + xlab("Data") + ylab("Temperatura Mínima") + ggtitle("São João mais frio de Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) +  geom_point(data=top_10_menores_temperaturas[10:10, ], colour="red", size=5)
+ggplot(data=top_10_menores_temperaturas, mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = tmin, )) + geom_point() + xlab("Data") + ylab("Temperatura Mínima") + ggtitle("São João mais frio de Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) +  geom_point(data=top_10_menores_temperaturas[10, ], colour="red", size=5)
 ```
 
 
@@ -61,6 +59,26 @@ Portanto, nesse caso, o São João mais frio foi no dia 29/06/2003 com a tempera
 ## Chuva
 
 ### Quanto chove por semana em JP e CG?
+
+```{r}
+chuvas_jp = climas %>% filter(cidade=="João Pessoa", chuva>10) %>% select(chuva, semana)
+chuvas_cg = climas %>% filter(cidade=="Campina Grande", chuva>10) %>% select(chuva, semana)
+```
+
+
+```{r}
+ggplot(data=chuvas_jp, mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = chuva)) + xlab("Data") + ylab("Chuva em mm³") + ggtitle("Chuvas em João Pessoa") + theme(plot.title = element_text(hjust = 0.5)) + geom_point()
+```
+
+```{r}
+ggplot(data=chuvas_cg, mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = chuva)) + xlab("Data") + ylab("Chuva em mm³") + ggtitle("Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) + geom_point()
+```
+
+```{r}
+ggplot(mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = chuva)) + xlab("Data") + ylab("Chuva em mm³") + ggtitle("Comparativo das duas cidades") + theme(plot.title = element_text(hjust = 0.5)) + geom_point(data=chuvas_jp, colour="red")+ geom_point(data=chuvas_cg, colour="blue")
+```
+
+
 
 ### Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual? 
 

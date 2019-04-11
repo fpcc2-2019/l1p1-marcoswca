@@ -71,18 +71,30 @@ ggplot(data=chuvas_jp, mapping = aes(x = paste(day(semana), month(semana), year(
 ```
 
 ```{r}
-ggplot(data=chuvas_cg, mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = chuva)) + xlab("Data") + ylab("Chuva em mm³") + ggtitle("Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) + geom_point()
+ggplot(data=chuvas_cg, mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = chuva)) + xlab("Data") + ylab("Chuva em mm³") + ggtitle("Chuvas em Campina Grande") + theme(plot.title = element_text(hjust = 0.5)) + geom_point()
 ```
 
+### No geral, onde chove mais?
+
+Para responder essa pergunta eu basicamente criei dois gráficos de pontos "sobrepostos" com o volume de chuva por semana nas duas cidades. E podemos observar que em João Pessoa chove mais tanto com relação ao número de vezes quanto ao volume de água.
 ```{r}
 ggplot(mapping = aes(x = paste(day(semana), month(semana), year(semana), sep="/"), y = chuva)) + xlab("Data") + ylab("Chuva em mm³") + ggtitle("Comparativo das duas cidades") + theme(plot.title = element_text(hjust = 0.5)) + geom_point(data=chuvas_jp, colour="red")+ geom_point(data=chuvas_cg, colour="blue")
 ```
 
 
+Como podemos observar no gráfico acima em João Pessoa (representado em vermelho) chove muito mais, tanto em quantidade quanto em volume.
 
-### Como é a distribuição do volume de chuvas por semana em JP e CG? A chuva varia mais ou menos que a temperatura? O formato da distribuição é igual? 
+Agora vejamos a quantidade de chuvas por mês em cada cidade.
 
-### No geral, onde chove mais?
+```{r}
+chuvas_por_mes_jp = climas %>% filter(cidade=="João Pessoa", chuva>10) %>%  select(chuva, semana) %>% mutate(month = format(semana, "%m"), year = format(semana, "%Y")) %>% group_by(month) %>% summarise(cmed = mean(chuva))
+chuvas_por_mes_cg = climas %>% filter(cidade=="Campina Grande", chuva>10) %>% select(chuva, semana) %>% mutate(month = format(semana, "%m"), year = format(semana, "%Y")) %>% group_by(month) %>% summarise(cmed = mean(chuva))
+```
 
-### A distribuição é diferente em meses específicos? 
+```{r}
+ggplot(mapping = aes(x=month,y=cmed)) + geom_col(data=chuvas_por_mes_jp, fill=rgb(0.8,0.1,0)) + xlab("Mês")  + geom_col(data=chuvas_por_mes_cg, fill=rgb(0.1,0,0.4)) + ylab("Chuva em mm³") + ggtitle("Comparativo das duas cidades") + theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+Como podemos observar no gráfico acima em João Pessoa (representado em vermelho) chove muito mais que em Campina Grande.
 
